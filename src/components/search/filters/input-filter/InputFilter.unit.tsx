@@ -1,19 +1,26 @@
 import * as React from "react";
 import {mount} from "enzyme";
 import { InputFilter } from "./InputFilter";
-import { SearchkitManager } from "../../../../core";
+import { SearchkitManager, SimpleQueryString, QueryString } from "../../../../core";
 const bem = require("bem-cn");
 import {
   fastClick, hasClass, jsxToHTML, printPrettyHtml
 } from "../../../__test__/TestHelpers"
 
+import {
+  Panel
+} from "../../../ui"
+
 import * as sinon from "sinon";
 
-describe("Searchbox tests", () => {
+const omit = require("lodash/omit")
+
+describe("InputFilter tests", () => {
 
   beforeEach(() => {
 
     this.searchkit = SearchkitManager.mock()
+    spyOn(this.searchkit, "performSearch")
 
     this.searchkit.translateFunction = (key)=> {
       return {
@@ -144,9 +151,11 @@ describe("Searchbox tests", () => {
     this.createWrapper(false)
     this.typeSearch('m')
     this.typeSearch('ma')
-    expect(this.accessor.state.getValue()).toBe("ma")
+    // State left in the component
+    expect(this.accessor.state.getValue()).toBe(null)
     expect(spy.callCount).toBe(0)
     this.wrapper.find("form").simulate("submit")
+    expect(this.accessor.state.getValue()).toBe("ma")
     expect(spy.callCount).toBe(1)
   })
 
@@ -156,7 +165,7 @@ describe("Searchbox tests", () => {
 
     this.createWrapper(false)
     this.setResults()
-    
+
     expect(hasClass(this.wrapper.find(".sk-input-filter__remove"), "is-hidden")).toBe(true)
     this.typeSearch('ma')
     expect(hasClass(this.wrapper.find(".sk-input-filter__remove"), "is-hidden")).toBe(false)
@@ -177,9 +186,12 @@ describe("Searchbox tests", () => {
     expect(options).toEqual({
       title: "Test title",
       addToFilters: true,
-      "queryFields": ["title"],
-      prefixQueryFields:false,
-      "queryOptions": {}
+      queryFields: ["title"],
+      prefixQueryFields:null,
+      queryOptions: {},
+      prefixQueryOptions: {},
+      queryBuilder:undefined,
+      onQueryStateChange:jasmine.any(Function)
     })
 
   })
@@ -192,24 +204,88 @@ describe("Searchbox tests", () => {
     expect(options).toEqual({
       title: "Test title",
       addToFilters: true,
+      prefixQueryFields:null,
       queryFields: ["title"],
-      prefixQueryFields:["title"],
-      queryOptions: {}
+      queryOptions: {},
+      prefixQueryOptions: {},
+      queryBuilder:undefined,
+      onQueryStateChange:jasmine.any(Function)
     })
 
   })
 
   it("should configure accessor + prefix", ()=> {
-    this.createWrapper(true, ["title"], ["prefix"])
+    this.createWrapper(true, ["title"], ["prefix"], {
+      queryOptions:{minimum_should_match:"60%"},
+      prefixQueryOptions:{minimum_should_match:"70%"},
+      queryBuilder:QueryString
+    })
 
     expect(this.accessor.key).toBe("test_id")
     let options = this.accessor.options
     expect(options).toEqual({
       title: "Test title",
       addToFilters: true,
-      "queryFields": ["title"],
+      queryFields: ["title"],
       prefixQueryFields:["prefix"],
-      "queryOptions": {}
+      queryOptions:{minimum_should_match:"60%"},
+      prefixQueryOptions:{minimum_should_match:"70%"},
+      queryBuilder:QueryString,
+      onQueryStateChange:jasmine.any(Function)
+    })
+  })
+
+  it("should accept Panel elements as containerComponent", ()=> {
+    this.createWrapper(true, ["title"], ["prefix"], {
+      containerComponent: <Panel collapsable={true} />
+    })
+    expect(hasClass(this.wrapper.find(".sk-panel__header"), "is-collapsable")).toBe(true)
+  })
+
+  describe("url change + blurAction", ()=> {
+
+    it("blurAction:restore", ()=> {
+      this.createWrapper(false, ["title"], ["prefix"], {
+        blurAction:"restore"
+      })
+      this.typeSearch("la")
+      expect(this.wrapper.node.getValue() ).toEqual("la")
+      this.accessor.fromQueryObject({
+        test_id:"foo"
+      })
+      expect(this.wrapper.node.getValue() ).toEqual("foo")
+
+      this.typeSearch("bar")
+      expect(this.wrapper.node.getValue()).toEqual("bar")
+      this.wrapper.find(".sk-input-filter__text")
+        .simulate("blur")
+
+      // should be restored to previous value
+      expect(this.wrapper.node.getValue()).toEqual("foo")
+      expect(this.searchkit.performSearch).not.toHaveBeenCalled()
+
+    })
+
+    it("blurAction:search", ()=> {
+      this.createWrapper(false, ["title"], ["prefix"], {
+        blurAction:"search"
+      })
+      this.typeSearch("la")
+      expect(this.wrapper.node.getValue() ).toEqual("la")
+      this.accessor.fromQueryObject({
+        test_id:"foo"
+      })
+      expect(this.wrapper.node.getValue() ).toEqual("foo")
+
+      this.typeSearch("bar")
+      expect(this.wrapper.node.getValue()).toEqual("bar")
+      this.wrapper.find(".sk-input-filter__text")
+        .simulate("blur")
+
+      // should flush value + search
+      expect(this.wrapper.node.getValue()).toEqual("bar")
+      expect(this.searchkit.performSearch).toHaveBeenCalled()
+
     })
 
   })

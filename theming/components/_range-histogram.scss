@@ -1,3 +1,4 @@
+@import "../vars.scss";
 
 .sk-range-histogram {
   height:50px;
@@ -14,4 +15,8 @@
       background:rgba(156,162,153,0.3);
     }
   }
+}
+
+.rc-tooltip {
+  font-family: $sk-font-family;
 }

@@ -4,10 +4,11 @@ import {
   QueryAccessor,
   SearchkitComponent,
   SearchkitComponentProps,
-  ReactComponentType
+  ReactComponentType,
+  renderComponent
 } from "../../../../core";
 
-import { SearchBox } from "../../search-box/src/SearchBox"
+import { SearchBox } from "../../search-box/SearchBox"
 
 import {
   Panel
@@ -16,6 +17,7 @@ import {
 const defaults = require('lodash/defaults')
 const throttle = require("lodash/throttle")
 const assign = require("lodash/assign")
+const isUndefined = require("lodash/isUndefined")
 
 export interface InputFilterProps extends SearchkitComponentProps {
   id: string
@@ -23,13 +25,14 @@ export interface InputFilterProps extends SearchkitComponentProps {
   mod?: string
   searchOnChange?:boolean
   searchThrottleTime?:number
+  queryBuilder?:Function
   queryFields?:Array<string>
-  prefixQueryFields?:Array<string>
   queryOptions?:any
+  prefixQueryFields?:Array<string>
   prefixQueryOptions?:any
   placeholder?: string
+  blurAction?:"search"|"restore"
   containerComponent?: ReactComponentType<any>
-  collapsable?: boolean
 }
 
 export class InputFilter extends SearchkitComponent<InputFilterProps, any> {
@@ -46,7 +49,8 @@ export class InputFilter extends SearchkitComponent<InputFilterProps, any> {
     containerComponent: Panel,
     collapsable: false,
     mod: "sk-input-filter",
-    searchThrottleTime:200
+    searchThrottleTime:200,
+    blurAction: "search"
   }
 
   static propTypes = defaults({
@@ -54,6 +58,7 @@ export class InputFilter extends SearchkitComponent<InputFilterProps, any> {
     title: React.PropTypes.string.isRequired,
     searchOnChange:React.PropTypes.bool,
     searchThrottleTime:React.PropTypes.number,
+    queryBuilder:React.PropTypes.func,
     queryFields:React.PropTypes.arrayOf(React.PropTypes.string),
     queryOptions:React.PropTypes.object,
     prefixQueryFields:React.PropTypes.arrayOf(React.PropTypes.string),
@@ -62,13 +67,15 @@ export class InputFilter extends SearchkitComponent<InputFilterProps, any> {
       SearchBox.translations
     ),
     mod: React.PropTypes.string,
-    placeholder: React.PropTypes.string
+    placeholder: React.PropTypes.string,
+    blurAction: React.PropTypes.string
   }, SearchkitComponent.propTypes)
 
   constructor (props:InputFilterProps) {
     super(props);
     this.state = {
-      focused:false
+      focused:false,
+      input: undefined
     }
     this.lastSearchMs = 0
     this.onClear = this.onClear.bind(this)
@@ -86,14 +93,22 @@ export class InputFilter extends SearchkitComponent<InputFilterProps, any> {
   }
 
   defineAccessor(){
-    const { id, title, prefixQueryFields, queryFields, searchOnChange, queryOptions, prefixQueryOptions } = this.props
+    const {
+      id, title, prefixQueryFields, queryFields, queryBuilder,
+      searchOnChange, queryOptions, prefixQueryOptions } = this.props
     return new QueryAccessor(id, {
-      title, 
+      title,
       addToFilters: true,
-      prefixQueryFields:(searchOnChange ? (prefixQueryFields || queryFields) : false),
       queryFields:queryFields || ["_all"],
+      prefixQueryFields,
       queryOptions:assign({}, queryOptions),
-      prefixQueryOptions:assign({}, prefixQueryOptions)
+      prefixQueryOptions:assign({}, prefixQueryOptions),
+      queryBuilder,
+      onQueryStateChange: () => {
+        if (!this.unmounted && this.state.input){
+          this.setState({input: undefined})
+        }
+      }
     })
   }
 
@@ -112,37 +127,60 @@ export class InputFilter extends SearchkitComponent<InputFilterProps, any> {
   }
 
   getValue(){
+    const { input } = this.state
+    if (isUndefined(input)) {
+      return this.getAccessorValue()
+    } else {
+      return input
+    }
+  }
+
+  getAccessorValue(){
     return (this.accessor.state.getValue() || "") + ""
   }
 
   onChange(e){
     const query = e.target.value;
-    this.accessor.setQueryString(query)
     if (this.props.searchOnChange) {
+      this.accessor.setQueryString(query)
       this.throttledSearch()
+      this.forceUpdate()
+    } else {
+      this.setState({ input: query })
     }
-    this.forceUpdate()
   }
-  
+
   onClear(){
     this.accessor.state = this.accessor.state.clear()
     this.searchkit.performSearch()
-    this.forceUpdate()
+    this.setState({ input: undefined })
   }
 
   setFocusState(focused:boolean) {
-    this.setState({focused:focused})
+    if (!focused){
+      const { input } = this.state
+      if (this.props.blurAction == "search"
+        && !isUndefined(input)
+        && input != this.getAccessorValue()){
+        this.searchQuery(input)
+      }
+      this.setState({
+        focused,
+        input: undefined // Flush (should use accessor's state now)
+      })
+    } else {
+      this.setState({ focused })
+    }
   }
 
   render() {
-    const { containerComponent, title, id, collapsable } = this.props
+    const { containerComponent, title, id } = this.props
     const block = this.bemBlocks.container
-    const value = this.getValue()
-    return React.createElement(containerComponent, {
+    const value = this.getValue()    
+    return renderComponent(containerComponent, {
       title,
       className: id ? `filter--${id}` : undefined,
-      disabled: (this.searchkit.getHitsCount() == 0) && (this.getValue() == ""),
-      collapsable
+      disabled: (this.searchkit.getHitsCount() == 0) && (this.getAccessorValue() == "")
     },
       <div className={block().state({focused:this.state.focused})}>
         <form onSubmit={this.onSubmit.bind(this)}>
@@ -158,7 +196,7 @@ export class InputFilter extends SearchkitComponent<InputFilterProps, any> {
             autoFocus={false}
             onInput={this.onChange.bind(this)}/>
           <input type="submit" value="search" className={block("action")} data-qa="submit"/>
-          <div data-qa="remove" 
+          <div data-qa="remove"
                onClick={this.onClear}
                className={block("remove").state({hidden:value == ""})} />
         </form>

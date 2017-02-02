@@ -4,7 +4,8 @@ import {
   SearchkitComponent,
   SearchkitComponentProps,
   CheckboxFilterAccessor,
-  ReactComponentType
+  ReactComponentType,
+  renderComponent
 } from "../../../../core";
 
 import {
@@ -21,7 +22,6 @@ export interface CheckboxFilterProps extends SearchkitComponentProps {
   label: string
   containerComponent?: ReactComponentType<any>
   listComponent?: ReactComponentType<any>
-  collapsable?: boolean
   showCount?: boolean
 }
 
@@ -36,7 +36,6 @@ export class CheckboxFilter extends SearchkitComponent<CheckboxFilterProps, any>
     translations: SearchkitComponent.translationsPropType(
         CheckboxFilterAccessor.translations
     ),
-    collapsable: React.PropTypes.bool,
     showCount: React.PropTypes.bool,
   }, SearchkitComponent.propTypes)
 
@@ -74,20 +73,20 @@ export class CheckboxFilter extends SearchkitComponent<CheckboxFilterProps, any>
       return [this.props.label]
     } else {
       return []
-    } 
+    }
   }
 
   render() {
-    const { listComponent, containerComponent, showCount, title, id, collapsable, label } = this.props
+    const { listComponent, containerComponent, showCount, title, id, label } = this.props
 
+    const disabled =  (this.searchkit.getHitsCount() == 0) && !this.accessor.state.getValue()
 
-    return React.createElement(containerComponent, {
+    return renderComponent(containerComponent, {
       title,
       className: id ? `filter--${id}` : undefined,
-      disabled: false,
-      collapsable
+      disabled
     },
-      React.createElement(listComponent, {
+      renderComponent(listComponent, {
         items: [{ key: label, doc_count: this.accessor.getDocCount() }],
         selectedItems: this.getSelectedItems(),
         toggleItem: this.toggleFilter,

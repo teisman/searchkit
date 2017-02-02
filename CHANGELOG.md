@@ -1,3 +1,56 @@
+## 0.10.0 (4th June, 2016)
+- `SearchkitManager` is more intelligent with reregistering url listeners
+- `RefinementListFilter`, `MenuFilter`, `NumericRefinementListFilter` and `RangeFilter` now supports `fieldOptions` for `nested`/`child` fields
+- `RefinementListFilter`, `MenuFilter` inject missing selected filters
+- `RefinementListFilter`, `MenuFilter` have new `bucketsTransform` prop function to manipulate the elastic search buckets returned.
+- Bug fix to itemComponent, listComponent, \*Component which allows context in stateless components
+- MenuFilter fix to support booleans
+- HierarchicalRefinementFilter disabled state fix
+- update history dependency to `2.1.1` which should be compatible with react-router 2.x
+- fix `DynamicRangeFilter` rounding issues
+- Added `countFormatter` count formatting support to `RefinementListFilter`, `MenuFilter`, `NumericRefinementListFilter`, `HierarchicalMenuFilter`, `HierarchicalRefinementFilter`, `HitsStats`
+- Added `rangeFormatter` range display support to `RangeFilter`, `DynamicRangeFilter`
+- Fix corner cases to BoolMustNot queries
+- `SearchkitManager` `searchOnLoad` now works without history
+- `SearchkitManager.addResultsListener` to register a callback when ever new results are recieved
+- Fix input filter styling
+- Fix FacetFilter 'View All' link edge case
+
+## 0.9.2 (7th April, 2016)
+### Notable changes
+- fix `NoHits` styling so it uses scss vars
+- fix `CheckboxFilter` disabled state
+- fix `SearchBox`, `InputFilter` when searchOnChange=false disabled state
+- introduce `blurAction` to `SearchBox`, `InputFilter`
+  - `blurAction="search" will search on blur`
+  - `blurAction="restore" will restore text to previous state on blur`
+
+## 0.9.1 (6th April, 2016)
+### Notable changes
+- fix scss dep management, so vars.scss can be overriden
+- add a dark theme example app in our test folder
+
+## 0.9.0 (3rd April, 2016)
+### Breaking changes
+- layout classnames `sk-action-bar__info` + `sk-action-bar__filter` renamed to `sk-action-bar-row`.
+  - We strongly advise to use the new layout components.
+
+### Notable Changes
+ - New `Layout` components to be used instead of specific div + classname markup
+   - `Layout`, `TopBar`, `LayoutBody`, `SideBar`, `LayoutResults`, `ActionBar`, `ActionBarRow`
+   - precursor to responsive layout where we make these layout components more intelligent.
+ - New `CheckboxFilter` component which does a on/off checkbox based on arbitrary query
+ - New `InputFilter` component which is a free text filter, great if you need to filter on specific fields.
+ - New `DynamicRangeFilter` component which will dynamically calculates the possible min/max based on your search results.
+  - note this filter only supports range slider UI.
+ - New `TagFilter` components, Used to have clickable tags within your search results.
+ - `SearchBox` enhancements
+  - `prefixQueryOptions` prop if you want to customize the elastic options for this query
+  - `queryBuilder` prop if you want to customize how the query is built, defaults to `SimpleQueryString`    
+ - `SortSelector` now supports multiple sort fields (e.g. secondary sort), be sure to provide the mandatory key
+ - `SearchkitManager` has new `reloadSearch` method, used if you want to just reload the search even with the same query.
+
+
 ## 0.8.3 (17th March, 2016)
 ### Bug Fixes
  - SortingSelector handles for app reload.

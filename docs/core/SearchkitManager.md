@@ -24,7 +24,7 @@ const searchkit = new SearchkitManager(host, {
 
 * **basicAuth** - A string containing "key:val" for authenticating on each request, useful if using cloud providers such as [searchly.com](http://searchly.com)
 
-* **searchOnLoad** - A boolean to search on load, defaults to `true`, only works when `useHistory` is enabled
+* **searchOnLoad** - A boolean to search on load, defaults to `true`
 
 * **useHistory** - A boolean to enable url history support, defaults to `true`
 
@@ -52,14 +52,30 @@ Sometimes we need to apply a default query which affects the entire search and i
   })
 ```
 
+## reloadSearch
+If you want to reload the search even with query and state hasn't changed
+```typescript
+  searchkit.reloadSearch()
+```
+
 ## Query Processor
 Searchkit offers ability to mutate the query just before its sent to ElasticSearch, this is so we can always support new apis for ElasticSearch and any custom logic you wish to add that is low level in searchkit normally.
 
 ```typescript
-searchkit.setQueryProcessor((plainQueryObject){
+searchkit.setQueryProcessor((plainQueryObject)=>{
   plainQueryObject.source = false
   return plainQueryObject
 })
 ```
-
 >*Note* We only support 1 queryProcessor function currently, so multiple `setQueryProcessor` calls will override each other.
+
+
+## resultsListener
+If you want to be notified when results changed
+```typescript
+let removalFn = searchkit.addResultsListener((results)=>{
+  //do something with results
+})
+
+//removalFn() if you want to stop listening
+```

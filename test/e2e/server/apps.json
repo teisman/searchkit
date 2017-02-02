@@ -4,5 +4,8 @@
   "range-app",
   "playground",
   "ui-app",
-  "taxonomy-app"
+  "taxonomy-app",
+  "children-app",
+  "readme-app",
+  "theme-app"
 ]

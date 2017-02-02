@@ -1,18 +1,4 @@
-@import "vars.scss";
-
-.sk-action-bar {
-
-  .sk-select {
-    margin-right:15px;
-  }
-}
-
-.sk-layout__filters {
-
-  .sk-select select {
-    width: 100%
-  }
-}
+@import "../vars.scss";
 
 .sk-select {
   position:relative;
@@ -28,15 +14,17 @@
     -webkit-appearance: none;
     -moz-appearance:    none;
     appearance:         none;
-    background:none;
+    background:$sk-selector-background;
     padding:6px 10px;
     padding-right: 30px;
-    border:1px solid $sk-border-color;
+    border:1px solid $sk-selector-border-color;
     outline:0;
     font-weight:$sk-bold-weight;
     font-size:$sk-text-font-size;
     border-radius:$sk-border-radius;
-    color:#000;
+    color:$sk-selector-text-color;
+    height: initial;
+    line-height: initial;
   }
 
   &:after {

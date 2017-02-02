@@ -25,6 +25,7 @@ describe("Range Filter tests", () => {
           max={100}
           title="metascore"
           interval={interval}
+          rangeFormatter={(count)=> count + " score"}
           showHistogram={withHistogram}/>
       );
 
@@ -67,7 +68,11 @@ describe("Range Filter tests", () => {
       field:"metascore",
       title:"metascore",
       interval: undefined,
-      loadBuckets:true
+      loadHistogram:true,
+      fieldOptions:{
+        type:'embedded',
+        field:'metascore'
+      }
     })
   })
 
@@ -96,7 +101,7 @@ describe("Range Filter tests", () => {
                 <div className="rc-slider-handle" style={{left:"0%"}}></div>
                 <div className="rc-slider-track" style={{left:"0%",width:"100%",visibility:"visible"}}></div>
                 <div className="rc-slider-step"><span className="rc-slider-dot rc-slider-dot-active" style={{left:"0%"}}></span><span className="rc-slider-dot rc-slider-dot-active" style={{left:"100%"}}></span></div>
-                <div className="rc-slider-mark"><span className="rc-slider-mark-text rc-slider-mark-text-active" style={{width:"90%",left:"-45%"}}>0</span><span className="rc-slider-mark-text rc-slider-mark-text-active" style={{width:"90%",left:"55%"}}>100</span></div>
+                <div className="rc-slider-mark"><span className="rc-slider-mark-text rc-slider-mark-text-active" style={{width:"90%",left:"-45%"}}>0 score</span><span className="rc-slider-mark-text rc-slider-mark-text-active" style={{width:"90%",left:"55%"}}>100 score</span></div>
               </div>
             </div>
           </div>
@@ -142,7 +147,7 @@ describe("Range Filter tests", () => {
 
   it("renders limited range correctly", ()=> {
     this.createWrapper(true)
-    this.wrapper.node.sliderUpdate({min:30,max:70})    
+    this.wrapper.node.sliderUpdate({min:30,max:70})
     expect(this.wrapper.find(".sk-range-histogram").html()).toEqual(jsxToHTML(
       <div className="sk-range-histogram">
         <div className="sk-range-histogram__bar is-out-of-bounds" style={{height:"20%"}}></div>

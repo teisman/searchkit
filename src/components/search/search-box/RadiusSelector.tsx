@@ -7,12 +7,12 @@ import {
   RenderComponentType,
   RenderComponentPropType,
   renderComponent
-} from "../../../../core"
+} from "../../../core"
 
 const map = require("lodash/map")
 const defaults = require("lodash/defaults")
 
-import { Select, ListProps } from "../../../ui"
+import { Select, ListProps } from "../../ui"
 
 export interface RadiusSelectorProps extends SearchkitComponentProps {
   listComponent?:RenderComponentType<ListProps>

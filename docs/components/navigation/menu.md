@@ -8,7 +8,8 @@ Provides a way to navigate through results for a single attribute. Only one valu
 import {
   Pagination,
   Hits,
-  SearchkitComponent
+  SearchkitComponent,
+  MenuFilter
 } from "searchkit";
 
 class App extends SearchkitComponent {
@@ -36,14 +37,14 @@ import {
   ItemList
 } from "searchkit";
 
-class App extends SearchkitComponent {
+class App extends React.Component {
 
   render(){
     <div>
       <MenuFilter
         field="languages.raw"
         title="Languages"
-        id="languages" 
+        id="languages"
         listComponent={ItemList}/>
     </div>
   }
@@ -63,11 +64,28 @@ class App extends SearchkitComponent {
 - `orderDirection` *(string)*: `asc` or `desc`
 - `include` *(Array<string>|string):* Terms bucket  include parameter see [Terms bucket filtering](https://www.elastic.co/guide/en/elasticsearch/reference/2.x/search-aggregations-bucket-terms-aggregation.html#_filtering_values_2)
 - `exclude` *(Array<string>|string):* Terms bucket exclude parameter, see above
+- `fieldOptions` *({type:"embedded|nested|children", options:Object})* Configures the type field that is stored in ElasticSearch, can be `embedded`(default) `nested` or `children`
+  - `type:nested` requires `options.path` provided
+  - `type:children` requires `options.childType` provided
+  - see [Field Options](../../core/FieldOptions.md)
+- `countFormatter` *((count:number)=> number|string)* A optional function to format the doc counts
+- `bucketsTransform` *((buckets:Array)=> transformedBuckets)* A optional function to transform the buckets used for the aggregation, can be used to sort the list or to inject new facets.
+
 
 ## List Component examples
 
 <img src="./assets/menu-list-components.png"/>
 
+## Translations
+- `All` - All
+
+```jsx
+<MenuFilter
+  field="languages.raw"
+  title="Languages"
+  id="languages"
+  translations={{"All":"All languages"}}/>
+```
 
 
 ## Demo
