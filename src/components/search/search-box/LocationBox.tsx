@@ -5,7 +5,7 @@ import {
   RadiusAccessor,
   SearchkitComponent,
   SearchkitComponentProps
-} from "../../../../core"
+} from "../../../core"
 
 const defaults = require("lodash/defaults")
 const throttle = require("lodash/throttle")

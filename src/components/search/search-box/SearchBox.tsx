@@ -4,7 +4,7 @@ import {
   QueryAccessor,
   SearchkitComponent,
   SearchkitComponentProps
-} from "../../core"
+} from "../../../core"
 
 const defaults = require("lodash/defaults")
 const throttle = require("lodash/throttle")
@@ -23,7 +23,6 @@ export interface SearchBoxProps extends SearchkitComponentProps {
   mod?: string
   placeholder?: string
   prefixQueryFields?:Array<string>
-  prefixQueryOptions?:Object
   blurAction?:"search"|"restore"
 }
 
@@ -54,7 +53,6 @@ export class SearchBox extends SearchkitComponent<SearchBoxProps, any> {
     queryOptions:React.PropTypes.object,
     prefixQueryOptions:React.PropTypes.object,
     prefixQueryFields:React.PropTypes.arrayOf(React.PropTypes.string),
-    prefixQueryOptions:React.PropTypes.object,
     translations:SearchkitComponent.translationsPropType(
       SearchBox.translations
     ),
